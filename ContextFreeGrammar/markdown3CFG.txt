@@ -1,0 +1,43 @@
+
+spaceLvl0 -> " " spaceLvl1 
+    | s
+spaceLvl1 -> " " spaceLvl2 
+    | s
+spaceLvl2 -> " " spaceLvl3 
+    | s
+spaceLvl3 -> " " indentionLevel1 
+    | s
+
+indentionLevel1 -> s
+
+
+### ATX headings ###
+
+multipleHash -> "#" multipleHash | "#"
+closing -> "\n" | " " spaces multipleHash spaces | spaces "\n"
+
+heading -> spaces text closing
+
+h -> "#" h1
+h1 -> "#" h2 | " " heading
+h2 -> "#" h3 | " " heading
+h3 -> "#" h4 | " " heading
+h4 -> "#" h5 | " " heading
+h5 -> "#" h6 | " " heading
+h6 -> "#" nh | " " heading
+nh -> text
+
+
+### Fenced Code Blocks ###
+
+backticks -> "`" backticks | "`"
+tildes -> "~" tildes | "~"
+infoString -> nonSpacePlainText | ""
+
+codeFence -> spaces infoString spaces "\n" 
+
+CFBackticks -> spaces0To3 "``" backticks codeFence codeFenceBodyB 
+CFTildes -> spaces0To3 "~~" tildes codeFence codeFenceBodyT
+
+codeFenceBodyB -> spaces0To3 "``" backticks spaces | text "\n" codeFenceBodyB
+codeFenceBodyT -> spaces0To3 "~~" tildes spaces | text "\n" codeFenceBodyT
