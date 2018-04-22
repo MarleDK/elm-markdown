@@ -1,4 +1,4 @@
-module Markdown exposing (..)
+module Common exposing (..)
 
 import Parser
     exposing
@@ -19,51 +19,26 @@ import Parser
         , (|.)
         , (|=)
         )
-import Html exposing (..)
 import Result exposing (Result)
-import Result.Extra exposing (combine)
-import String
 
 
-type Block
-    = Document Blocks
-    | List Blocks
-    | ListItem ListType Blocks
+type AST
+    = Document List AST
+    | Header String
+    | UList ListItems
+    | OList ListItems
+    | Paragraph String
+    | BlankLine
+    | CodeBlock (List String)
+    | ThematicBreak
 
 
-type ListType
-    = BulletList ListSpacing
-    | OrderedList ListSpacing
+type alias ListItems =
+    List String
 
 
-type ListSpacing
-    = Tight
-    | Loose
-
-
-type alias Blocks =
-    List Block
-
-
-toHtml : String -> Html msg
-toHtml s =
-    text (toString (markdown s))
-
-
-markdown : String -> Result Error (List AST)
-markdown str =
-    String.lines str
-        |> List.foldl proccessLine
-        |> combine
-
-
-proccessLine : String -> Result Error AST
-proccessLine str =
-    parse str
-
-
-parse : String -> Result Error AST
-parse s =
+buildParser : String -> Result Error AST
+buildParser s =
     run
         (oneOf
             [ blankLine
@@ -95,6 +70,7 @@ indentedCodeBlockItem =
     succeed identity
         |. symbol "    "
         |= restOfLine
+        |. lineBreak
 
 
 thematicBreak : Parser AST
@@ -106,7 +82,7 @@ thematicBreak =
                 , repeat (AtLeast 3) (thematicBreakHelp "*")
                 , repeat (AtLeast 3) (thematicBreakHelp "_")
                 ]
-            |. end
+            |. lineBreak
 
 
 thematicBreakHelp : String -> Parser ()
@@ -122,6 +98,7 @@ header =
             |. symbol "# "
             |. ignore zeroOrMore space
             |= restOfLine
+            |. lineBreak
 
 
 bulletList : Parser AST
@@ -136,12 +113,14 @@ bulletListItem =
         |. symbol "- "
         |. ignore zeroOrMore space
         |= restOfLine
+        |. lineBreak
 
 
 paragraph : Parser AST
 paragraph =
     succeed Paragraph
-        |= restOfLine
+        |= keep zeroOrMore (not << newline)
+        |. lineBreak
 
 
 
@@ -150,9 +129,17 @@ paragraph =
 -}
 
 
+lineBreak : Parser ()
+lineBreak =
+    oneOf
+        [ end
+        , ignore (Exactly 1) newline
+        ]
+
+
 restOfLine : Parser String
 restOfLine =
-    keep zeroOrMore (\_ -> True)
+    keep zeroOrMore (not << newline)
 
 
 spaces0To3 : Parser ()

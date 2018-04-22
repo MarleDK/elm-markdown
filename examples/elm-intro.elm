@@ -1,8 +1,9 @@
+module Main exposing (..)
+
 import Html exposing (Html, text, div, textarea)
 import Html.Events exposing (onInput)
-import Markdown2
+import MarkdownNaive
 import Markdown
-
 
 
 main =
@@ -13,8 +14,8 @@ main =
         }
 
 
-type Msg =
-    Update String
+type Msg
+    = Update String
 
 
 update : Msg -> String -> String
