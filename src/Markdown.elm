@@ -1,48 +1,40 @@
 module Markdown exposing (..)
 
-import Parser
-    exposing
-        ( Error
-        , Parser
-        , Count(..)
-        , run
-        , oneOf
-        , delayedCommit
-        , succeed
-        , ignore
-        , keep
-        , oneOrMore
-        , zeroOrMore
-        , repeat
-        , symbol
-        , end
-        , (|.)
-        , (|=)
-        )
+import Parser exposing (..)
 import Html exposing (..)
 import Result exposing (Result)
-import Result.Extra exposing (combine)
-import String
 
 
-type Block
-    = Document Blocks
-    | List Blocks
-    | ListItem ListType Blocks
+type AST
+    = Document List AST
+    | Header String
+    | UList ListItems
+    | OList ListItems
+    | Paragraph String
+    | BlankLine
+    | CodeBlock (List String)
+    | ThematicBreak
 
 
-type ListType
-    = BulletList ListSpacing
-    | OrderedList ListSpacing
+type alias ListItems =
+    List String
 
 
-type ListSpacing
-    = Tight
-    | Loose
 
-
-type alias Blocks =
-    List Block
+{-
+   toHtml : String -> Html msg
+   toHtml s =
+       case
+           run (
+               oneOf [
+                   header
+                   , bulletList
+               ]
+           ) s
+       of
+           Err e -> text e.source
+           Ok a -> a
+-}
 
 
 toHtml : String -> Html msg
@@ -51,28 +43,18 @@ toHtml s =
 
 
 markdown : String -> Result Error (List AST)
-markdown str =
-    String.lines str
-        |> List.foldl proccessLine
-        |> combine
-
-
-proccessLine : String -> Result Error AST
-proccessLine str =
-    parse str
-
-
-parse : String -> Result Error AST
-parse s =
+markdown s =
     run
-        (oneOf
-            [ blankLine
-            , indentedCodeBlock
-            , thematicBreak
-            , bulletList
-            , header
-            , paragraph
-            ]
+        (repeat zeroOrMore
+            (oneOf
+                [ blankLine
+                , indentedCodeBlock
+                , thematicBreak
+                , bulletList
+                , header
+                , paragraph
+                ]
+            )
         )
         s
 
@@ -95,6 +77,7 @@ indentedCodeBlockItem =
     succeed identity
         |. symbol "    "
         |= restOfLine
+        |. lineBreak
 
 
 thematicBreak : Parser AST
@@ -106,7 +89,7 @@ thematicBreak =
                 , repeat (AtLeast 3) (thematicBreakHelp "*")
                 , repeat (AtLeast 3) (thematicBreakHelp "_")
                 ]
-            |. end
+            |. lineBreak
 
 
 thematicBreakHelp : String -> Parser ()
@@ -122,6 +105,7 @@ header =
             |. symbol "# "
             |. ignore zeroOrMore space
             |= restOfLine
+            |. lineBreak
 
 
 bulletList : Parser AST
@@ -136,12 +120,14 @@ bulletListItem =
         |. symbol "- "
         |. ignore zeroOrMore space
         |= restOfLine
+        |. lineBreak
 
 
 paragraph : Parser AST
 paragraph =
     succeed Paragraph
-        |= restOfLine
+        |= keep oneOrMore (not << newline)
+        |. lineBreak
 
 
 
@@ -150,9 +136,17 @@ paragraph =
 -}
 
 
+lineBreak : Parser ()
+lineBreak =
+    oneOf
+        [ end
+        , ignore (Exactly 1) newline
+        ]
+
+
 restOfLine : Parser String
 restOfLine =
-    keep zeroOrMore (\_ -> True)
+    keep zeroOrMore (not << newline)
 
 
 spaces0To3 : Parser ()

@@ -1,7 +1,7 @@
 module ShowTests exposing (..)
 
 import LongMarkdown exposing (longMarkdown)
-import MarkdownNaive
+import Markdown
 
 
 --import Markdown
