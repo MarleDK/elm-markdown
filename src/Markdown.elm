@@ -1,192 +1,157 @@
-module Markdown exposing (..)
+module AlphaTest exposing (..)
 
-import Parser
-    exposing
-        ( Error
-        , Parser
-        , Count(..)
-        , run
-        , oneOf
-        , delayedCommit
-        , succeed
-        , ignore
-        , keep
-        , oneOrMore
-        , zeroOrMore
-        , repeat
-        , symbol
-        , end
-        , (|.)
-        , (|=)
-        )
-import Html exposing (..)
+import Parser exposing (..)
 import Result exposing (Result)
-import Result.Extra exposing (combine)
-import String
 
 
-type Block
-    = Document Blocks
-    | List Blocks
-    | ListItem ListType Blocks
+-- AST
 
 
-type ListType
-    = BulletList ListSpacing
-    | OrderedList ListSpacing
+type AST
+    = H1 String
+    | H2 String
+    | H3 String
+    | H4 String
+    | H5 String
+    | H6 String
+    | P String
 
 
-type ListSpacing
-    = Tight
-    | Loose
-
-
-type alias Blocks =
-    List Block
-
-
-toHtml : String -> Html msg
-toHtml s =
-    text (toString (markdown s))
-
-
-markdown : String -> Result Error (List AST)
-markdown str =
-    String.lines str
-        |> List.foldl proccessLine
-        |> combine
-
-
-proccessLine : String -> Result Error AST
-proccessLine str =
-    parse str
-
-
-parse : String -> Result Error AST
-parse s =
-    run
-        (oneOf
-            [ blankLine
-            , indentedCodeBlock
-            , thematicBreak
-            , bulletList
-            , header
-            , paragraph
-            ]
-        )
-        s
-
-
-blankLine : Parser AST
-blankLine =
-    delayedCommit (ignore zeroOrMore space) <|
-        succeed BlankLine
-            |. ignore (Exactly 1) newline
-
-
-indentedCodeBlock : Parser AST
-indentedCodeBlock =
-    succeed CodeBlock
-        |= repeat oneOrMore indentedCodeBlockItem
-
-
-indentedCodeBlockItem : Parser String
-indentedCodeBlockItem =
-    succeed identity
-        |. symbol "    "
-        |= restOfLine
-
-
-thematicBreak : Parser AST
-thematicBreak =
-    flip delayedCommit (succeed ThematicBreak) <|
-        spaces0To3
-            |. oneOf
-                [ repeat (AtLeast 3) (thematicBreakHelp "-")
-                , repeat (AtLeast 3) (thematicBreakHelp "*")
-                , repeat (AtLeast 3) (thematicBreakHelp "_")
-                ]
-            |. end
-
-
-thematicBreakHelp : String -> Parser ()
-thematicBreakHelp s =
-    (symbol s)
-        |. ignore zeroOrMore whitespace
-
-
-header : Parser AST
-header =
-    delayedCommit spaces0To3 <|
-        succeed Header
-            |. symbol "# "
-            |. ignore zeroOrMore space
-            |= restOfLine
-
-
-bulletList : Parser AST
-bulletList =
-    succeed UList
-        |= repeat oneOrMore bulletListItem
-
-
-bulletListItem : Parser String
-bulletListItem =
-    succeed identity
-        |. symbol "- "
-        |. ignore zeroOrMore space
-        |= restOfLine
-
-
-paragraph : Parser AST
-paragraph =
-    succeed Paragraph
-        |= restOfLine
+id =
+    identity
 
 
 
-{-
-   Here is a section for helping parsers
--}
+-- Generally used parsers
 
 
 restOfLine : Parser String
 restOfLine =
-    keep zeroOrMore (\_ -> True)
+    keep zeroOrMore (\c -> c /= '\n')
 
 
-spaces0To3 : Parser ()
-spaces0To3 =
+
+-- Indention handling parsers
+
+
+spaceLvl0 =
+    oneOf [ succeed id |. symbol " " |= spaceLvl1, s ]
+
+
+spaceLvl1 =
+    oneOf [ succeed id |. symbol " " |= spaceLvl2, s ]
+
+
+spaceLvl2 =
+    oneOf [ succeed id |. symbol " " |= spaceLvl3, s ]
+
+
+spaceLvl3 =
+    oneOf [ succeed id |. symbol " " |= indentionLevel1, s ]
+
+
+indentionLevel1 =
+    paragraph
+
+
+
+-- FullLineConsumers
+
+
+s =
+    oneOf [ h, paragraph ]
+
+
+
+-- Headers
+
+
+hStrip : Char -> String -> String
+hStrip c s =
+    if String.isEmpty s then
+        if c == '#' then
+            ""
+        else
+            String.cons c s
+    else
+        String.cons c s
+
+
+formatHeader s =
+    s
+        |> String.trim
+        |> String.foldr hStrip ""
+        |> String.trim
+
+
+headerOrText source a =
+    case a of
+        H1 s ->
+            H1 <| formatHeader s
+
+        H2 s ->
+            H2 <| formatHeader s
+
+        H3 s ->
+            H3 <| formatHeader s
+
+        H4 s ->
+            H4 <| formatHeader s
+
+        H5 s ->
+            H5 <| formatHeader s
+
+        H6 s ->
+            H6 <| formatHeader s
+
+        _ ->
+            P source
+
+
+h =
+    sourceMap headerOrText
+        (succeed id |. symbol "#" |= h1)
+
+
+hHelp a b =
     oneOf
-        [ symbol "   "
-        , symbol "  "
-        , symbol " "
-        , succeed ()
+        [ succeed id |. symbol "#" |= a
+        , succeed id |. symbol " " |= map b restOfLine
         ]
 
 
-
-{-
-   Here is a section of characters/character groups
--}
+h1 =
+    hHelp h2 H1
 
 
-newline : Char -> Bool
-newline c =
-    c == '\n'
+h2 =
+    hHelp h3 H2
 
 
-space : Char -> Bool
-space c =
-    c == ' '
+h3 =
+    hHelp h4 H3
 
 
-whitespace : Char -> Bool
-whitespace c =
-    List.member c
-        [ ' '
-        , '\t'
-        , '\n'
-        , '\x0B'
-        , '\x0C'
-        ]
+h4 =
+    hHelp h5 H4
+
+
+h5 =
+    hHelp h6 H5
+
+
+h6 =
+    hHelp nh H6
+
+
+nh =
+    paragraph
+
+
+
+-- Paragraph
+
+
+paragraph : Parser AST
+paragraph =
+    map (P) restOfLine
