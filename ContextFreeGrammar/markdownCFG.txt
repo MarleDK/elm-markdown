@@ -1,0 +1,190 @@
+### General ###
+
+text -> 
+
+multiLineText -> 
+
+plainText -> 
+
+nonSpacePlainText -> plain text without whitespace
+
+spaces0To3 -> "   " | "  " | " "
+
+spaces -> " " spaces | " " | ""
+
+upperCaseChar ->
+
+blankLine ->
+
+
+### ThematicBreak ###
+
+TBStarMore -> "*" spaces TBStarMore | ""
+TBStar -> "*" spaces "*" spaces "*" spaces TBStarMore
+
+TBHyphenMore -> "-" spaces TBHyphenMore | ""
+TBHyphen -> "-" spaces "-" spaces "-" spaces TBHyphenMore
+
+TBUnderlineMore -> "_" spaces TBUnderlineMore | ""
+TBUnderline -> "_" spaces "_" spaces "_" spaces TBUnderlineMore
+
+thematicBreak -> spaces0To3 (TBStar | TBHyphen | TBUnderline ) "\n"
+
+
+
+### ATX headings ###
+
+multipleHash -> "#" multipleHash | "#"
+closing -> "\n" | " " spaces multipleHash spaces | spaces "\n"
+
+heading -> spaces text closing
+
+h1 -> spaces0To3 "# " heading
+h2 -> spaces0To3 "## " heading
+h3 -> spaces0To3 "### " heading
+h4 -> spaces0To3 "#### " heading
+h5 -> spaces0To3 "##### " heading
+h6 -> spaces0To3 "###### " heading
+
+
+
+### Setext headings ###
+
+setext -> spaces0To3 multiLineText "\n" spaces0To3
+hyphens -> "-" hyphens | "-"
+equalsigns -> "=" equalsigns | "="
+
+h1 -> setext "-" hyphens spaces "\n"
+h2 -> setext "=" equalsigns spaces "\n"
+
+
+
+### Indented code blocks ### 
+
+indentedLine -> "    " plainText "\n"
+nonIndentedBlankLine -> spaces "\n"
+nonEmptyIndentedLine -> "    " spaces nonSpacePlainText plainText "\n"
+
+codeBlockHelp -> indentedLine codeBlockHelp 
+    | nonIndentedBlankLine codeBlockHelp 
+    | nonEmptyIndentedLine
+
+codeBlock -> nonEmptyIndentedLine codeBlockHelp | nonEmptyIndentedLine
+
+
+
+### Fenced Code Blocks ###
+
+backticks -> "`" backticks | "`"
+tildes -> "~" tildes | "~"
+infoString -> nonSpacePlainText | ""
+
+codeFence -> spaces infoString spaces "\n" 
+
+CFBackticks -> spaces0To3 "``" backticks codeFence codeFenceBodyB 
+CFTildes -> spaces0To3 "~~" tildes codeFence codeFenceBodyT
+
+codeFenceBodyB -> spaces0To3 "``" backticks spaces | text "\n" codeFenceBodyB
+codeFenceBodyT -> spaces0To3 "~~" tildes spaces | text "\n" codeFenceBodyT
+
+
+
+### HTML blocks ###
+HTMLAfterStartTag -> whitespace | ">" | "\n"
+
+SC1 -> "<script" | "<pre" | "<style"
+EC1 -> "</script>" | "</pre>" | "</style>"
+
+HTMLBlock -> spaces0To3 SC1 HTMLAfterStartTag plainText EC1
+
+SC2 -> "<!--" 
+EC2 -> "-->"
+
+HTMLBlock -> spaces0To3 SC2 plaintext EC2
+
+SC3 -> "<?"
+EC3 -> "?>"
+
+HTMLBlock -> spaces0To3 SC3 plaintext EC3
+
+
+SC4 -> "<!" upperCaseChar
+EC4 -> ">" 
+
+HTMLBlock -> spaces0To3 SC4 plaintext EC4
+
+SC5 -> "<![CDATA["
+EC5 -> "]]>"
+
+HTMLBlock ->  spaces0To3 SC5 plaintext EC5
+
+HTMLStartTags -> "address"
+	| "article"
+	| "aside"
+	| "base"
+	| "basefont"
+	| "blockquote"
+	| "body"
+	| "caption"
+	| "center"
+	| "col"
+	| "colgroup"
+	| "dd"
+	| "details"
+	| "dialog"
+	| "dir"
+	| "div"
+	| "dl"
+	| "dt"
+	| "fieldset"
+	| "figcaption"
+	| "figure"
+	| "footer"
+	| "form"
+	| "frame"
+	| "frameset"
+	| "h1"
+	| "h2"
+	| "h3"
+	| "h4"
+	| "h5"
+	| "h6"
+	| "head"
+	| "header"
+	| "hr"
+	| "html"
+	| "iframe"
+	| "legend"
+	| "li"
+	| "link"
+	| "main"
+	| "menu"
+	| "menuitem"
+	| "meta"
+	| "nav"
+	| "noframes"
+	| "ol"
+	| "optgroup"
+	| "option"
+	| "p"
+	| "param"
+	| "section"
+	| "source"
+	| "summary"
+	| "table"
+	| "tbody"
+	| "td"
+	| "tfoot"
+	| "th"
+	| "thead"
+	| "title"
+	| "tr"
+	| "track"
+	| "ul"
+
+SC6 -> "<" HTMLStartTags | "</" HTMLStartTags
+EC6 -> blankLine
+
+HTMLBlock -> spaces0To3 SC6 plaintext EC6
+
+SC7 -> openTag whitespace "\n" | closingTag whitespace "\n"
