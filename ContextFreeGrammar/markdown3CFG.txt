@@ -27,6 +27,15 @@ h5 -> "#" h6 | " " heading
 h6 -> "#" nh | " " heading
 nh -> text
 
+### Lists ###
+
+#### Bullet List ####
+
+
+
+#### Ordered List ####
+
+
 
 ### Fenced Code Blocks ###
 
