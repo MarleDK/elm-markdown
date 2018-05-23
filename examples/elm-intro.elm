@@ -2,7 +2,6 @@ module Main exposing (..)
 
 import Html exposing (Html, text, div, textarea)
 import Html.Events exposing (onInput)
-import MarkdownNaive
 import Markdown
 
 

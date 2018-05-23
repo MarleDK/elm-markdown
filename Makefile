@@ -7,5 +7,5 @@ reactor:
 
 .PHONY: test 
 test:
-	@echo "http://localhost:8001/Show.elm"
+	@echo "http://localhost:8001/UnitTests.elm"
 	cd tests; elm-reactor -p 8001

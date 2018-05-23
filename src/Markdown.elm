@@ -18,175 +18,75 @@ import Parser
         , end
         , (|.)
         , (|=)
+        , andThen
         )
-import Html exposing (..)
-import Result exposing (Result)
+import Result exposing (Result(..))
 import Result.Extra exposing (combine)
 import String
-
-
-type Block
-    = Document Blocks
-    | List Blocks
-    | ListItem ListType Blocks
-
-
-type ListType
-    = BulletList ListSpacing
-    | OrderedList ListSpacing
-
-
-type ListSpacing
-    = Tight
-    | Loose
-
-
-type alias Blocks =
-    List Block
+import Blocks exposing (header, listItem, paragraph)
+import BlockType exposing (LineBlock, LineBlocks, Block, Blocks, Denominator)
+import Helpers exposing (is, isNot, whitespace, anyChar, restOfLine)
+import BlockToHtml exposing (processBlocks)
+import Html exposing (Html)
 
 
 toHtml : String -> Html msg
 toHtml s =
-    text (toString (markdown s))
-
-
-markdown : String -> Result Error (List AST)
-markdown str =
-    String.lines str
-        |> List.foldl proccessLine
+    String.lines s
+        |> List.map lineToBlock
         |> combine
+        |> Result.map processBlocks
+        |> Result.Extra.extract
+            (\x ->
+                Html.div []
+                    [ Html.p [] [ Html.text s ]
+                    , Html.p [] []
+                    , Html.p [] [ Html.text (toString x) ]
+                    ]
+            )
 
 
-proccessLine : String -> Result Error AST
-proccessLine str =
-    parse str
-
-
-parse : String -> Result Error AST
-parse s =
-    run
-        (oneOf
-            [ blankLine
-            , indentedCodeBlock
-            , thematicBreak
-            , bulletList
-            , header
-            , paragraph
-            ]
-        )
-        s
-
-
-blankLine : Parser AST
-blankLine =
-    delayedCommit (ignore zeroOrMore space) <|
-        succeed BlankLine
-            |. ignore (Exactly 1) newline
-
-
-indentedCodeBlock : Parser AST
-indentedCodeBlock =
-    succeed CodeBlock
-        |= repeat oneOrMore indentedCodeBlockItem
-
-
-indentedCodeBlockItem : Parser String
-indentedCodeBlockItem =
-    succeed identity
-        |. symbol "    "
-        |= restOfLine
-
-
-thematicBreak : Parser AST
-thematicBreak =
-    flip delayedCommit (succeed ThematicBreak) <|
-        spaces0To3
-            |. oneOf
-                [ repeat (AtLeast 3) (thematicBreakHelp "-")
-                , repeat (AtLeast 3) (thematicBreakHelp "*")
-                , repeat (AtLeast 3) (thematicBreakHelp "_")
-                ]
-            |. end
-
-
-thematicBreakHelp : String -> Parser ()
-thematicBreakHelp s =
-    (symbol s)
-        |. ignore zeroOrMore whitespace
-
-
-header : Parser AST
-header =
-    delayedCommit spaces0To3 <|
-        succeed Header
-            |. symbol "# "
-            |. ignore zeroOrMore space
-            |= restOfLine
-
-
-bulletList : Parser AST
-bulletList =
-    succeed UList
-        |= repeat oneOrMore bulletListItem
-
-
-bulletListItem : Parser String
-bulletListItem =
-    succeed identity
-        |. symbol "- "
-        |. ignore zeroOrMore space
-        |= restOfLine
-
-
-paragraph : Parser AST
-paragraph =
-    succeed Paragraph
-        |= restOfLine
+lineToBlock : String -> Result Error LineBlock
+lineToBlock =
+    run leadingWhiteSpace
 
 
 
-{-
-   Here is a section for helping parsers
--}
+-- LeadingWhiteSpaceParsers
 
 
-restOfLine : Parser String
-restOfLine =
-    keep zeroOrMore (\_ -> True)
+leadingWhiteSpace : Parser LineBlock
+leadingWhiteSpace =
+    andThen p indention
 
 
-spaces0To3 : Parser ()
-spaces0To3 =
-    oneOf
-        [ symbol "   "
-        , symbol "  "
-        , symbol " "
-        , succeed ()
-        ]
+p : Int -> Parser LineBlock
+p i =
+    Parser.sourceMap (\src blc -> LineBlock i blc src) block
+
+
+indention : Parser Int
+indention =
+    Parser.map List.sum
+        (repeat zeroOrMore (oneOf [ tabs, spaces ]))
+
+
+tabs : Parser Int
+tabs =
+    succeed (\x -> 4 * String.length x)
+        |= keep oneOrMore (is '\t')
+
+
+spaces : Parser Int
+spaces =
+    succeed String.length
+        |= keep oneOrMore (is ' ')
 
 
 
-{-
-   Here is a section of characters/character groups
--}
+-- Block Parsers
 
 
-newline : Char -> Bool
-newline c =
-    c == '\n'
-
-
-space : Char -> Bool
-space c =
-    c == ' '
-
-
-whitespace : Char -> Bool
-whitespace c =
-    List.member c
-        [ ' '
-        , '\t'
-        , '\n'
-        , '\x0B'
-        , '\x0C'
-        ]
+block : Parser Block
+block =
+    oneOf [ header, listItem, paragraph ]

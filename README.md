@@ -1,5 +1,9 @@
 # elm-markdown
 
+This version the focus is on parsing lines one at a time, and then 
+making structures afterwards.  
+Trying to follow the commonmark parsing strategy.
+
 # Dependencies
 - [Parser](http://package.elm-lang.org/packages/elm-tools/parser/2.0.1/) As the Parser library
 
