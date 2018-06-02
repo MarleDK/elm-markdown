@@ -18,25 +18,26 @@ import Html exposing (..)
 -- Type Definitions
 
 
-type alias LineBlock =
+type alias LineBlock msg =
     { indent : Int
-    , block : Block
+    , block : Block msg
     , source : String
     }
 
 
-type alias LineBlocks =
-    List LineBlock
+type alias LineBlocks msg =
+    List (LineBlock msg)
 
 
-type Block
+type Block msg
     = ATXHeader HeaderLevel String
     | Paragraph String
     | ListItem Denominator String
+    | HtmlBlock (Html msg)
 
 
-type alias Blocks =
-    List Block
+type alias Blocks msg =
+    List (Block msg)
 
 
 
@@ -68,7 +69,7 @@ type HeaderLevel
     | H6
 
 
-blockToHtml : Block -> Html msg
+blockToHtml : Block msg -> Html msg
 blockToHtml block =
     case block of
         ATXHeader hl s ->
@@ -79,6 +80,9 @@ blockToHtml block =
 
         ListItem _ s ->
             li [] [ text s ]
+
+        HtmlBlock x ->
+            x
 
 
 hlToHTML : HeaderLevel -> (List (Html.Attribute msg) -> List (Html.Html msg) -> Html.Html msg)

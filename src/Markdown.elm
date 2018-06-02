@@ -25,15 +25,17 @@ import Result.Extra exposing (combine)
 import String
 import Blocks exposing (header, listItem, paragraph)
 import BlockType exposing (LineBlock, LineBlocks, Block, Blocks, Denominator)
-import Helpers exposing (is, isNot, whitespace, anyChar, restOfLine)
+import Helpers exposing (is, isNot, whitespace, anyChar, restOfLine, indention)
 import BlockToHtml exposing (processBlocks)
 import Html exposing (Html)
+import PreParser exposing (parse)
 
 
 toHtml : String -> Html msg
 toHtml s =
-    String.lines s
-        |> List.map lineToBlock
+    s
+        |> PreParser.parse
+        |> PreParser.toBlocks lineToBlock
         |> combine
         |> Result.map processBlocks
         |> Result.Extra.extract
@@ -46,7 +48,7 @@ toHtml s =
             )
 
 
-lineToBlock : String -> Result Error LineBlock
+lineToBlock : String -> Result Error (LineBlock msg)
 lineToBlock =
     run leadingWhiteSpace
 
@@ -55,38 +57,20 @@ lineToBlock =
 -- LeadingWhiteSpaceParsers
 
 
-leadingWhiteSpace : Parser LineBlock
+leadingWhiteSpace : Parser (LineBlock msg)
 leadingWhiteSpace =
     andThen p indention
 
 
-p : Int -> Parser LineBlock
+p : Int -> Parser (LineBlock msg)
 p i =
     Parser.sourceMap (\src blc -> LineBlock i blc src) block
-
-
-indention : Parser Int
-indention =
-    Parser.map List.sum
-        (repeat zeroOrMore (oneOf [ tabs, spaces ]))
-
-
-tabs : Parser Int
-tabs =
-    succeed (\x -> 4 * String.length x)
-        |= keep oneOrMore (is '\t')
-
-
-spaces : Parser Int
-spaces =
-    succeed String.length
-        |= keep oneOrMore (is ' ')
 
 
 
 -- Block Parsers
 
 
-block : Parser Block
+block : Parser (Block msg)
 block =
     oneOf [ header, listItem, paragraph ]

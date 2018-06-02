@@ -1,6 +1,17 @@
 module Helpers exposing (..)
 
-import Parser exposing (Parser, keep, zeroOrMore)
+import Parser
+    exposing
+        ( Parser
+        , keep
+        , zeroOrMore
+        , oneOrMore
+        , succeed
+        , repeat
+        , oneOf
+        , keep
+        , (|=)
+        )
 import Html
 
 
@@ -36,3 +47,25 @@ anyChar =
 restOfLine : Parser String
 restOfLine =
     keep zeroOrMore anyChar
+
+
+
+-- Indention
+
+
+indention : Parser Int
+indention =
+    Parser.map List.sum
+        (repeat zeroOrMore (oneOf [ tabs, spaces ]))
+
+
+tabs : Parser Int
+tabs =
+    succeed (\x -> 4 * String.length x)
+        |= keep oneOrMore (is '\t')
+
+
+spaces : Parser Int
+spaces =
+    succeed String.length
+        |= keep oneOrMore (is ' ')

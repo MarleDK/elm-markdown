@@ -1,22 +1,19 @@
 module ShowTests exposing (..)
 
-import LongMarkdown exposing (longMarkdown)
 import Blocks exposing (..)
-
-
---import Markdown
-
-import Fuzz exposing (..)
+import BlockType exposing (..)
 import Test exposing (..)
 import Expect
 import Test.Runner.Html as Runner
 import Result exposing (Result)
 import Parser
+import IntegrationTests
 
 
 main : Runner.TestProgram
 main =
     [ atxHeader, list ]
+        |> List.append IntegrationTests.all
         |> concat
         |> Runner.run
 
@@ -26,15 +23,15 @@ atxHeader =
     describe "ATXHeaders"
         [ test "Base case" <|
             \_ ->
-                Expect.equal (Result.Ok (ATXHeader 1 "Test1")) <|
+                Expect.equal (Result.Ok (ATXHeader H1 "Test1")) <|
                     Parser.run header "# Test1"
         , test "Multiple Hashtags" <|
             \_ ->
-                Expect.equal (Result.Ok (ATXHeader 4 "Test2")) <|
+                Expect.equal (Result.Ok (ATXHeader H4 "Test2")) <|
                     Parser.run header "#### Test2"
         , test "Multiple spaces after hash are not removed yet" <|
             \_ ->
-                Expect.equal (Result.Ok (ATXHeader 2 "   Test3")) <|
+                Expect.equal (Result.Ok (ATXHeader H2 "   Test3")) <|
                     Parser.run header "##    Test3"
         ]
 

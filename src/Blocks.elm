@@ -40,12 +40,12 @@ import BlockType
 -- ATXHeaders
 
 
-header : Parser Block
+header : Parser (Block msg)
 header =
     (succeed identity |. symbol "#" |= h1)
 
 
-hHelp : Parser Block -> (String -> Block) -> Parser Block
+hHelp : Parser (Block msg) -> (String -> Block msg) -> Parser (Block msg)
 hHelp a b =
     oneOf
         [ succeed identity
@@ -58,37 +58,37 @@ hHelp a b =
         ]
 
 
-h1 : Parser Block
+h1 : Parser (Block msg)
 h1 =
     hHelp h2 (ATXHeader H1)
 
 
-h2 : Parser Block
+h2 : Parser (Block msg)
 h2 =
     hHelp h3 (ATXHeader H2)
 
 
-h3 : Parser Block
+h3 : Parser (Block msg)
 h3 =
     hHelp h4 (ATXHeader H3)
 
 
-h4 : Parser Block
+h4 : Parser (Block msg)
 h4 =
     hHelp h5 (ATXHeader H4)
 
 
-h5 : Parser Block
+h5 : Parser (Block msg)
 h5 =
     hHelp h6 (ATXHeader H5)
 
 
-h6 : Parser Block
+h6 : Parser (Block msg)
 h6 =
     hHelp nh (ATXHeader H6)
 
 
-nh : Parser Block
+nh : Parser (Block msg)
 nh =
     paragraph
 
@@ -97,7 +97,7 @@ nh =
 -- Paragraph
 
 
-paragraph : Parser Block
+paragraph : Parser (Block msg)
 paragraph =
     Parser.map (Paragraph) restOfLine
 
@@ -111,12 +111,12 @@ paragraph =
 -}
 
 
-listItem : Parser Block
+listItem : Parser (Block msg)
 listItem =
     oneOf [ bulletList1, bulletList2, bulletList3 ]
 
 
-bulletItemHelper : String -> Denominator -> Parser Block
+bulletItemHelper : String -> Denominator -> Parser (Block msg)
 bulletItemHelper c d =
     succeed identity
         |. symbol c
@@ -128,17 +128,17 @@ bulletItemHelper c d =
             ]
 
 
-bulletList1 : Parser Block
+bulletList1 : Parser (Block msg)
 bulletList1 =
     bulletItemHelper "-" Minus
 
 
-bulletList2 : Parser Block
+bulletList2 : Parser (Block msg)
 bulletList2 =
     bulletItemHelper "+" Plus
 
 
-bulletList3 : Parser Block
+bulletList3 : Parser (Block msg)
 bulletList3 =
     bulletItemHelper "*" Star
 
