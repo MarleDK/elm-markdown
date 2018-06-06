@@ -11,6 +11,7 @@ import Parser
         , oneOf
         , keep
         , (|=)
+        , source
         )
 import Html
 

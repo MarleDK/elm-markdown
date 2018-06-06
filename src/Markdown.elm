@@ -7,9 +7,7 @@ import Parser
         , Count(..)
         , run
         , oneOf
-        , delayedCommit
         , succeed
-        , ignore
         , keep
         , oneOrMore
         , zeroOrMore

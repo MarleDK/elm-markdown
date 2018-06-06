@@ -22,7 +22,7 @@ import Parser
 import Helpers exposing (restOfLine, indention, whitespace, isNot, is)
 import Char
 import HtmlParser
-import HtmlParser.Util exposing (toVirtualDom)
+import HtmlParser.Util
 import BlockType exposing (LineBlock, Block(..))
 
 
@@ -45,7 +45,7 @@ toBlock f x =
         H y ->
             y
                 |> HtmlParser.parse
-                |> toVirtualDom
+                |> HtmlParser.Util.toVirtualDom
                 |> List.map HtmlBlock
                 |> List.map (flip (LineBlock 0) y)
                 |> List.map Result.Ok

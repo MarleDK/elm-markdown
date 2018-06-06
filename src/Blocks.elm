@@ -12,9 +12,7 @@ import Parser
         , Count(..)
         , run
         , oneOf
-        , delayedCommit
         , succeed
-        , ignore
         , keep
         , oneOrMore
         , zeroOrMore
@@ -23,7 +21,6 @@ import Parser
         , end
         , (|.)
         , (|=)
-        , andThen
         )
 import Helpers exposing (is, isNot, whitespace, anyChar, restOfLine)
 import BlockType
@@ -141,35 +138,3 @@ bulletList2 =
 bulletList3 : Parser (Block msg)
 bulletList3 =
     bulletItemHelper "*" Star
-
-
-
-{-
-   thematicBreak : Parser Block
-   thematicBreak =
-
-
-   thematicBreakHelp : String -> Parser ()
-   thematicBreakHelp s =
-       (symbol s)
-           |. ignore zeroOrMore whitespace
-
-
-
-    thematicBreak : Parser AST
-      thematicBreak =
-          flip delayedCommit (succeed ThematicBreak) <|
-              spaces0To3
-                  |. oneOf
-                      [ repeat (AtLeast 3) (thematicBreakHelp "-")
-                      , repeat (AtLeast 3) (thematicBreakHelp "*")
-                      , repeat (AtLeast 3) (thematicBreakHelp "_")
-                      ]
-                  |. end
-
-
-      thematicBreakHelp : String -> Parser ()
-      thematicBreakHelp s =
-          (symbol s)
-              |. ignore zeroOrMore whitespace
--}
