@@ -42,9 +42,7 @@ processNonEmptyBlocksHelp h t =
                     html :: processBlocksHelp rest
 
             Paragraph s ->
-                -- TODO --
                 (p [] [ text s ])
-                    :: (p [] [ text "Paragraph rendering not finished" ])
                     :: (processBlocksHelp t)
 
             HtmlBlock x ->
