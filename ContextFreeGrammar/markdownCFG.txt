@@ -14,7 +14,9 @@ spaces -> " " spaces | " " | ""
 
 upperCaseChar ->
 
-blankLine ->
+lineBreak "\n" | EOF
+
+blankLine -> spaces lineBreak
 
 
 ### ThematicBreak ###

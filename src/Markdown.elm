@@ -20,23 +20,6 @@ type alias ListItems =
     List String
 
 
-
-{-
-   toHtml : String -> Html msg
-   toHtml s =
-       case
-           run (
-               oneOf [
-                   header
-                   , bulletList
-               ]
-           ) s
-       of
-           Err e -> text e.source
-           Ok a -> a
--}
-
-
 toHtml : String -> Html msg
 toHtml s =
     text (toString (markdown s))
