@@ -10,7 +10,7 @@ nonSpacePlainText -> plain text without whitespace
 
 spaces0To3 -> "   " | "  " | " "
 
-spaces -> " " spaces | " " | ""
+spaces -> " " spaces | ""
 
 upperCaseChar ->
 
