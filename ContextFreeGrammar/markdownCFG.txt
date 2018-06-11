@@ -1,12 +1,12 @@
 ### General ###
 
-text -> 
+text -> [^\n]*
 
 multiLineText -> 
 
 plainText -> 
 
-nonSpacePlainText -> plain text without whitespace
+nonSpacePlainText -> [^ ]*
 
 spaces0To3 -> "   " | "  " | " "
 
