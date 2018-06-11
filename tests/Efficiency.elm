@@ -29,13 +29,19 @@ type Msg
     | EndTime Time
 
 
+longMarkdown : String
+longMarkdown =
+    String.join "\n" <|
+        List.repeat 200 LongMarkdown.longMarkdown
+
+
 update : Msg -> Model msg -> ( Model msg, Cmd Msg )
 update msg model =
     case msg of
         StartTime time ->
             ( { model
                 | time1 = time
-                , md = Markdown.toHtml LongMarkdown.longMarkdown
+                , md = Markdown.toHtml longMarkdown
               }
             , Task.perform EndTime Time.now
             )
@@ -47,7 +53,7 @@ update msg model =
 view : Model msg -> Html Msg
 view model =
     div []
-        [ p [] [ text "New Html Program" ]
+        [ p [] [ text "Efficiency test of parsing Markdown" ]
         , p [] [ text ("Start time: " ++ (toString model.time1)) ]
         , p [] [ text ("End time: " ++ (toString model.time2)) ]
         , p [] [ text ("Time taken: " ++ (toString (model.time2 - model.time1))) ]
