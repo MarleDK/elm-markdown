@@ -26,23 +26,29 @@ import HtmlParser.Util
 import BlockType exposing (LineBlock, Block(..))
 
 
-type Line a
-    = S a
-    | H String
+type Line
+    = Str String
+    | Html String
 
 
-toBlocks : (a -> Result Error (LineBlock msg)) -> List (Line a) -> List (Result Error (LineBlock msg))
+toBlocks :
+    (String -> Result Error (LineBlock msg))
+    -> List Line
+    -> List (Result Error (LineBlock msg))
 toBlocks f x =
     List.concatMap (toBlock f) x
 
 
-toBlock : (a -> Result Error (LineBlock msg)) -> Line a -> List (Result Error (LineBlock msg))
+toBlock :
+    (String -> Result Error (LineBlock msg))
+    -> Line
+    -> List (Result Error (LineBlock msg))
 toBlock f x =
     case x of
-        S a ->
+        Str a ->
             [ f a ]
 
-        H y ->
+        Html y ->
             y
                 |> HtmlParser.parse
                 |> HtmlParser.Util.toVirtualDom
@@ -51,23 +57,23 @@ toBlock f x =
                 |> List.map Result.Ok
 
 
-combineHs : List (Line String) -> List (Line String)
+combineHs : List Line -> List Line
 combineHs l =
     case l of
         [] ->
             []
 
-        (H x) :: (H y) :: t ->
-            combineHs (H (x ++ "\n" ++ y) :: t)
+        (Html x) :: (Html y) :: t ->
+            combineHs (Html (x ++ "\n" ++ y) :: t)
 
-        (H x) :: t ->
-            (H x) :: combineHs t
+        (Html x) :: t ->
+            (Html x) :: combineHs t
 
-        (S x) :: t ->
-            (S x) :: combineHs t
+        (Str x) :: t ->
+            (Str x) :: combineHs t
 
 
-parse : String -> List (Line String)
+parse : String -> List Line
 parse s =
     s
         |> String.lines
@@ -75,7 +81,7 @@ parse s =
         |> combineHs
 
 
-takeS : List String -> List (Line String)
+takeS : List String -> List Line
 takeS lines =
     case lines of
         [] ->
@@ -87,10 +93,10 @@ takeS lines =
                     takeH lines endCond
 
                 Err _ ->
-                    (S h) :: (takeS t)
+                    (Str h) :: (takeS t)
 
 
-takeH : List String -> (String -> Bool) -> List (Line String)
+takeH : List String -> (String -> Bool) -> List Line
 takeH lines endCond =
     case lines of
         [] ->
@@ -99,10 +105,10 @@ takeH lines endCond =
         h :: t ->
             case endCond h of
                 True ->
-                    (H h) :: (takeS t)
+                    (Html h) :: (takeS t)
 
                 False ->
-                    (H h) :: (takeH t endCond)
+                    (Html h) :: (takeH t endCond)
 
 
 parser : Parser (String -> Bool)

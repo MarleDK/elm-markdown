@@ -1,13 +1,22 @@
 module BlockToHtml exposing (processBlocks)
 
-import BlockType exposing (Denominator(..), LineBlock, LineBlocks, Block(..), Blocks, hlToHTML, blockToHtml)
+import BlockType
+    exposing
+        ( Denominator(..)
+        , LineBlock
+        , LineBlocks
+        , Block(..)
+        , Blocks
+        , hlToHTML
+        , blockToHtml
+        )
 import Html exposing (..)
 import Tuple
 
 
 {-
-   This module is responsible for transforming a list og Blocks to the right
-   HTML representation.
+   This module is responsible for transforming a list of Blocks to
+   the right HTML representation.
    This requires some context when processing the list.
 -}
 
@@ -27,7 +36,10 @@ processBlocksHelp blocks =
             processNonEmptyBlocksHelp h t
 
 
-processNonEmptyBlocksHelp : LineBlock msg -> LineBlocks msg -> List (Html msg)
+processNonEmptyBlocksHelp :
+    LineBlock msg
+    -> LineBlocks msg
+    -> List (Html msg)
 processNonEmptyBlocksHelp h t =
     if h.indent < 4 then
         case h.block of
@@ -49,10 +61,23 @@ processNonEmptyBlocksHelp h t =
                 x :: processBlocksHelp t
     else
         -- TODO: multiline --
-        [ (pre [] [ code [] [ text h.source ] ]) ]
+        let
+            ( codeBlock, rest ) =
+                proccessIndCodeBlock (h :: t)
+        in
+            (pre [] [ code [] [ text (String.join "\n" codeBlock) ] ]) :: processBlocksHelp rest
 
 
-newList : Int -> Denominator -> String -> LineBlocks msg -> ( Html msg, LineBlocks msg )
+
+-- Lists
+
+
+newList :
+    Int
+    -> Denominator
+    -> String
+    -> LineBlocks msg
+    -> ( Html msg, LineBlocks msg )
 newList x denom s t =
     let
         ( html, inItem, restOfBlocks ) =
@@ -64,7 +89,11 @@ newList x denom s t =
         ( (ul [] listItems), restOfBlocks )
 
 
-proccessList : Int -> Denominator -> LineBlocks msg -> ( List (Html msg), List (Html msg), LineBlocks msg )
+proccessList :
+    Int
+    -> Denominator
+    -> LineBlocks msg
+    -> ( List (Html msg), List (Html msg), LineBlocks msg )
 proccessList x denom blocks =
     case blocks of
         [] ->
@@ -74,7 +103,12 @@ proccessList x denom blocks =
             proccessListItem x denom h t
 
 
-proccessListItem : Int -> Denominator -> LineBlock msg -> LineBlocks msg -> ( List (Html msg), List (Html msg), LineBlocks msg )
+proccessListItem :
+    Int
+    -> Denominator
+    -> LineBlock msg
+    -> LineBlocks msg
+    -> ( List (Html msg), List (Html msg), LineBlocks msg )
 proccessListItem x denom h t =
     if (h.indent - x) >= 2 && (h.indent - x) < 6 then
         case h.block of
@@ -113,3 +147,24 @@ proccessListItem x denom h t =
             _ ->
                 -- TODO --
                 ( [], [], h :: t )
+
+
+
+-- Indented code blocks
+
+
+proccessIndCodeBlock : List (LineBlock msg) -> ( List String, List (LineBlock msg) )
+proccessIndCodeBlock l =
+    case l of
+        [] ->
+            ( [], [] )
+
+        h :: t ->
+            if h.indent < 4 then
+                ( [], h :: t )
+            else
+                let
+                    src =
+                        (String.repeat (h.indent - 4) " ") ++ h.source
+                in
+                    Tuple.mapFirst ((::) (src)) (proccessIndCodeBlock t)

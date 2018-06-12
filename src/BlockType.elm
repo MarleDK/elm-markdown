@@ -85,7 +85,13 @@ blockToHtml block =
             x
 
 
-hlToHTML : HeaderLevel -> (List (Html.Attribute msg) -> List (Html.Html msg) -> Html.Html msg)
+type alias HTMLConstructorFunction msg =
+    List (Html.Attribute msg)
+    -> List (Html.Html msg)
+    -> Html.Html msg
+
+
+hlToHTML : HeaderLevel -> HTMLConstructorFunction msg
 hlToHTML hl =
     case hl of
         H1 ->

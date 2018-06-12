@@ -21,7 +21,7 @@ import Html
 
 isNot : a -> a -> Bool
 isNot a b =
-    not (is a b)
+    a /= b
 
 
 is : a -> a -> Bool

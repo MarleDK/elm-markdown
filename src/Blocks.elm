@@ -1,9 +1,4 @@
-module Blocks
-    exposing
-        ( header
-        , paragraph
-        , listItem
-        )
+module Blocks exposing (block)
 
 import Parser
     exposing
@@ -32,6 +27,12 @@ import BlockType
         , Denominator(..)
         , HeaderLevel(..)
         )
+
+
+block : Parser (Block msg)
+block =
+    oneOf [ header, listItem, paragraph ]
+
 
 
 -- ATXHeaders
