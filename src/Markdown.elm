@@ -47,18 +47,9 @@ import PreParser exposing (parse)
 toHtml : String -> Html msg
 toHtml s =
     s
-        |> PreParser.parse
-        |> PreParser.toBlocks lineToBlock
-        |> Result.Extra.combine
-        |> Result.map processBlocks
-        |> Result.Extra.extract
-            (\x ->
-                Html.div []
-                    [ Html.p [] [ Html.text s ]
-                    , Html.p [] []
-                    , Html.p [] [ Html.text (toString x) ]
-                    ]
-            )
+        |> run (keep zeroOrMore anyChar)
+        |> Result.Extra.extract (toString)
+        |> Html.text
 
 
 lineToBlock : String -> Result Error (LineBlock msg)
