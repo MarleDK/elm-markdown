@@ -61,10 +61,14 @@ processNonEmptyBlocksHelp h t =
                 x :: processBlocksHelp t
     else
         let
-            ( codeBlock, rest ) =
+            ( codeBlocks, rest ) =
                 proccessIndCodeBlock (h :: t)
+
+            codeBlock =
+                String.join "\n" codeBlocks
         in
-            (pre [] [ code [] [ text (String.join "\n" codeBlock) ] ]) :: processBlocksHelp rest
+            (pre [] [ code [] [ text codeBlock ] ])
+                :: processBlocksHelp rest
 
 
 
@@ -152,7 +156,9 @@ proccessListItem x denom h t =
 -- Indented code blocks
 
 
-proccessIndCodeBlock : List (LineBlock msg) -> ( List String, List (LineBlock msg) )
+proccessIndCodeBlock :
+    List (LineBlock msg)
+    -> ( List String, List (LineBlock msg) )
 proccessIndCodeBlock l =
     case l of
         [] ->
