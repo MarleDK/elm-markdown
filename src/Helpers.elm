@@ -12,6 +12,7 @@ import Parser
         , keep
         , (|=)
         , source
+        , ignoreUntil
         )
 import Html
 
@@ -47,7 +48,7 @@ anyChar =
 
 restOfLine : Parser String
 restOfLine =
-    keep zeroOrMore anyChar
+    source (ignoreUntil "\n")
 
 
 
