@@ -60,7 +60,6 @@ processNonEmptyBlocksHelp h t =
             HtmlBlock x ->
                 x :: processBlocksHelp t
     else
-        -- TODO: multiline --
         let
             ( codeBlock, rest ) =
                 proccessIndCodeBlock (h :: t)
