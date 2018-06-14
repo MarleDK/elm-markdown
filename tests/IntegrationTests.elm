@@ -6,30 +6,26 @@ import Test.Runner.Html as Runner
 import Result exposing (Result)
 import Markdown
 import Html
+import LongMarkdown
+import Test.Html.Selector as Selector
+import Test.Html.Query as Query
 
 
 all : List Test
 all =
     [ html
     , atxHeader
+    , paragraph
+    , longMarkdown
     ]
 
 
-htmlMarkdownInput1 : String
-htmlMarkdownInput1 =
-    """<pre>
-hej
-</pre>
-# Hej"""
-
-
-htmlMarkdownOutput1 : Html.Html msg
-htmlMarkdownOutput1 =
-    Html.div []
-        [ Html.pre []
-            [ Html.text "\nhej\n" ]
-        , Html.h1 [] [ Html.text "Hej" ]
-        ]
+toTest : ( String, String, Html.Html msg ) -> Test
+toTest ( desc, input, output ) =
+    test desc <|
+        \_ ->
+            Expect.equal output
+                (Markdown.toHtml input)
 
 
 htmlIOTests : List ( String, String, Html.Html msg )
@@ -52,14 +48,6 @@ htmlIOTests =
             ]
       )
     ]
-
-
-toTest : ( String, String, Html.Html msg ) -> Test
-toTest ( desc, input, output ) =
-    test desc <|
-        \_ ->
-            Expect.equal output
-                (Markdown.toHtml input)
 
 
 html : Test
@@ -91,7 +79,7 @@ paragraphs =
             ]
       )
     , ( "Spaces are stripped"
-      , "   Test      "
+      , "   Test"
       , Html.div []
             [ Html.p [] [ Html.text "Test" ]
             ]
@@ -101,4 +89,15 @@ paragraphs =
 
 paragraph : Test
 paragraph =
-    describe "Paragraphs" (List.map toTest paragraphs)
+    describe "Paragraphs Integration tests" (List.map toTest paragraphs)
+
+
+longMarkdown : Test
+longMarkdown =
+    describe "Test that the long markdown does not fail when parsing"
+        [ test "Long markdown does not fail" <|
+            \_ ->
+                (Markdown.toHtml LongMarkdown.longMarkdown)
+                    |> Query.fromHtml
+                    |> Query.hasNot [ Selector.text "Error" ]
+        ]

@@ -56,7 +56,8 @@ toHtml s =
 extractError : String -> Error -> Html msg
 extractError s err =
     Html.div []
-        [ Html.p [] [ Html.text s ]
+        [ Html.h1 [] [ Html.text "Error" ]
+        , Html.p [] [ Html.text s ]
         , Html.p [] []
         , Html.p [] [ Html.text (toString err) ]
         ]
