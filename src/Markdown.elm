@@ -27,7 +27,6 @@ import BlockType
         ( LineBlock
         , LineBlocks
         , Block
-        , Blocks
         , Denominator
         )
 import Helpers
@@ -51,14 +50,16 @@ toHtml s =
         |> PreParser.toBlocks lineToBlock
         |> Result.Extra.combine
         |> Result.map processBlocks
-        |> Result.Extra.extract
-            (\x ->
-                Html.div []
-                    [ Html.p [] [ Html.text s ]
-                    , Html.p [] []
-                    , Html.p [] [ Html.text (toString x) ]
-                    ]
-            )
+        |> Result.Extra.extract (extractError s)
+
+
+extractError : String -> Error -> Html msg
+extractError s err =
+    Html.div []
+        [ Html.p [] [ Html.text s ]
+        , Html.p [] []
+        , Html.p [] [ Html.text (toString err) ]
+        ]
 
 
 lineToBlock : String -> Result Error (LineBlock msg)

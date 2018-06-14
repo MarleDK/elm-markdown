@@ -6,7 +6,6 @@ import BlockType
         , LineBlock
         , LineBlocks
         , Block(..)
-        , Blocks
         , hlToHTML
         , blockToHtml
         )

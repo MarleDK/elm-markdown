@@ -1,32 +1,8 @@
 module Blocks exposing (block)
 
-import Parser
-    exposing
-        ( Error
-        , Parser
-        , Count(..)
-        , run
-        , oneOf
-        , succeed
-        , keep
-        , oneOrMore
-        , zeroOrMore
-        , repeat
-        , symbol
-        , end
-        , (|.)
-        , (|=)
-        )
-import Helpers exposing (is, isNot, whitespace, anyChar, restOfLine)
-import BlockType
-    exposing
-        ( LineBlock
-        , LineBlocks
-        , Block(..)
-        , Blocks
-        , Denominator(..)
-        , HeaderLevel(..)
-        )
+import Parser exposing (Parser, oneOf, succeed, symbol, (|.), (|=))
+import Helpers exposing (restOfLine)
+import BlockType exposing (Block(..), Denominator(..), HeaderLevel(..))
 
 
 block : Parser (Block msg)

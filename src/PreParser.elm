@@ -12,14 +12,13 @@ import Parser
         , oneOf
         , repeat
         , ignore
-        , ignoreUntil
         , zeroOrMore
         , oneOrMore
         , end
         , delayedCommit
         , Error
         )
-import Helpers exposing (restOfLine, indention, whitespace, isNot, is)
+import Helpers exposing (indention, whitespace, isNot, is)
 import Char
 import HtmlParser
 import HtmlParser.Util

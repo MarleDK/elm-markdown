@@ -3,7 +3,6 @@ module BlockType
         ( LineBlock
         , LineBlocks
         , Block(..)
-        , Blocks
         , Denominator(..)
         , HeaderLevel(..)
         , hlToHTML
@@ -34,10 +33,6 @@ type Block msg
     | Paragraph String
     | ListItem Denominator String
     | HtmlBlock (Html msg)
-
-
-type alias Blocks msg =
-    List (Block msg)
 
 
 

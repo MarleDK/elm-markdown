@@ -48,7 +48,7 @@ anyChar =
 
 restOfLine : Parser String
 restOfLine =
-    source (ignoreUntil "\n")
+    keep zeroOrMore anyChar
 
 
 
