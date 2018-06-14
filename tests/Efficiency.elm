@@ -18,45 +18,73 @@ main =
 
 
 type alias Model msg =
-    { time1 : Time
-    , time2 : Time
+    { time : Time
+    , times : List Time
     , md : Html msg
+    , testLengths : List Int
     }
 
 
 type Msg
-    = StartTime Time
-    | EndTime Time
+    = NewTime Time
+    | StartTime Time
 
 
-longMarkdown : String
-longMarkdown =
+listOfTests : List Int
+listOfTests =
+    List.map ((*) 5) (List.range 1 100)
+
+
+longMarkdown : Int -> String
+longMarkdown i =
     String.join "\n" <|
-        List.repeat 200 LongMarkdown.longMarkdown
+        List.repeat i LongMarkdown.longMarkdown
 
 
 update : Msg -> Model msg -> ( Model msg, Cmd Msg )
 update msg model =
     case msg of
-        StartTime time ->
-            ( { model
-                | time1 = time
-                , md = Markdown.toHtml longMarkdown
-              }
-            , Task.perform EndTime Time.now
-            )
+        NewTime time ->
+            case model.testLengths of
+                [] ->
+                    ( { model
+                        | times = (time - model.time) :: model.times
+                      }
+                    , Cmd.none
+                    )
 
-        EndTime time ->
-            ( { model | time2 = time }, Cmd.none )
+                h :: t ->
+                    ( { model
+                        | times = (time - model.time) :: model.times
+                        , time = time
+                        , md = Markdown.toHtml (longMarkdown h)
+                        , testLengths = t
+                      }
+                    , Task.perform NewTime Time.now
+                    )
+
+        StartTime time ->
+            case model.testLengths of
+                [] ->
+                    ( model
+                    , Cmd.none
+                    )
+
+                h :: t ->
+                    ( { model
+                        | time = time
+                        , md = Markdown.toHtml (longMarkdown h)
+                        , testLengths = t
+                      }
+                    , Task.perform NewTime Time.now
+                    )
 
 
 view : Model msg -> Html Msg
 view model =
     div []
         [ p [] [ text "Efficiency test of parsing Markdown" ]
-        , p [] [ text ("Start time: " ++ (toString model.time1)) ]
-        , p [] [ text ("End time: " ++ (toString model.time2)) ]
-        , p [] [ text ("Time taken: " ++ (toString (model.time2 - model.time1))) ]
+        , p [] [ text ("Time taken: " ++ (toString (model.times))) ]
         ]
 
 
@@ -67,4 +95,4 @@ subscriptions model =
 
 init : ( Model msg, Cmd Msg )
 init =
-    ( Model 0 0 (text ""), Task.perform StartTime Time.now )
+    ( Model 0 [] (text "") listOfTests, Task.perform StartTime Time.now )
