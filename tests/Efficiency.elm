@@ -1,4 +1,4 @@
-module Name exposing (Model, Msg, update, view, subscriptions, init)
+module Efficiency exposing (..)
 
 import Html exposing (..)
 import Markdown
