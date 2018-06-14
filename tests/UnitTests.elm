@@ -1,46 +1,48 @@
-module ShowTests exposing (..)
+module UnitTests exposing (..)
 
 import Blocks exposing (..)
 import BlockType exposing (..)
 import Test exposing (..)
 import Expect
-import Test.Runner.Html as Runner
 import Result exposing (Result)
 import Parser
-import IntegrationTests
 
 
-main : Runner.TestProgram
-main =
-    [ atxHeader, list ]
-        |> List.append IntegrationTests.all
-        |> concat
-        |> Runner.run
+all =
+    [ atxHeader, list, paragraph ]
+
+
+equalTest a b c =
+    test a <|
+        \_ ->
+            Expect.equal (Result.Ok b) (Parser.run block c)
+
+
+notEqualTest a b c =
+    test a <|
+        \_ ->
+            Expect.notEqual (Result.Ok b) (Parser.run block c)
 
 
 atxHeader : Test
 atxHeader =
     describe "ATXHeaders"
-        [ test "Base case" <|
-            \_ ->
-                Expect.equal (Result.Ok (ATXHeader H1 "Test1")) <|
-                    Parser.run header "# Test1"
-        , test "Multiple Hashtags" <|
-            \_ ->
-                Expect.equal (Result.Ok (ATXHeader H4 "Test2")) <|
-                    Parser.run header "#### Test2"
-        , test "Multiple spaces after hash are not removed yet" <|
-            \_ ->
-                Expect.equal (Result.Ok (ATXHeader H2 "   Test3")) <|
-                    Parser.run header "##    Test3"
+        [ equalTest "Base case" (ATXHeader H1 "Test") "# Test"
+        , equalTest "Multiple Hashtags" (ATXHeader H4 "Test") "#### Test"
+        , notEqualTest "Space is needed between # and header" (ATXHeader H4 "Test") "####Test"
         ]
 
 
 list : Test
 list =
     describe "Lists"
-        [ test "Base case" <|
-            \_ ->
-                Expect.equal (Result.Ok (ListItem Star "Test4")) <|
-                    Parser.run listItem "* Test4"
+        [ equalTest "Base case" (ListItem Star "Test") "* Test"
+        , notEqualTest "Space is needed between denominator and text" (ListItem Star "Test") "*Test"
+        ]
+
+
+paragraph : Test
+paragraph =
+    describe "Paragraphs"
+        [ equalTest "Base case" (Paragraph "Test") "Test"
         ]
