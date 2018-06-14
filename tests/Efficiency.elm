@@ -32,7 +32,7 @@ type Msg
 
 listOfTests : List Int
 listOfTests =
-    List.map ((*) 5) (List.range 1 100)
+    List.map ((*) 5) (List.range 1 30)
 
 
 longMarkdown : Int -> String
