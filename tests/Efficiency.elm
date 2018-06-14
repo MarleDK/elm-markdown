@@ -1,4 +1,4 @@
-module Name exposing (Model, Msg, update, view, subscriptions, init)
+module Efficiency exposing (..)
 
 import Html exposing (..)
 import Markdown
@@ -32,7 +32,7 @@ type Msg
 
 listOfTests : List Int
 listOfTests =
-    List.map ((*) 5) (List.range 1 100)
+    List.map ((*) 5) (List.range 1 30)
 
 
 longMarkdown : Int -> String
