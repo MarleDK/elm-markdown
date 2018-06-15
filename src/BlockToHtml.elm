@@ -112,6 +112,11 @@ proccessListItem :
     -> LineBlocks msg
     -> ( List (Html msg), List (Html msg), LineBlocks msg )
 proccessListItem x denom h t =
+    {- Returns:
+       ( Blocks to append the list
+       , Blocks to append the list item
+       , rest of lines)
+    -}
     if (h.indent - x) >= 2 && (h.indent - x) < 6 then
         case h.block of
             ListItem denom2 s ->
@@ -125,12 +130,13 @@ proccessListItem x denom h t =
                     ( currentElement :: html, [], rest2 )
 
             other ->
-                -- TODO --
                 let
                     ( html, inItem, rest ) =
                         proccessList x denom t
                 in
                     ( [], blockToHtml other :: inItem, rest )
+    else if (h.indent - x) < 0 then
+        ( [], [], h :: t )
     else
         case h.block of
             ListItem denom2 s ->
@@ -147,7 +153,6 @@ proccessListItem x denom h t =
                     ( [], [], t )
 
             _ ->
-                -- TODO --
                 ( [], [], h :: t )
 
 

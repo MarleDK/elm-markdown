@@ -17,6 +17,7 @@ all =
     , atxHeader
     , paragraph
     , longMarkdown
+    , list
     ]
 
 
@@ -101,3 +102,39 @@ longMarkdown =
                     |> Query.fromHtml
                     |> Query.hasNot [ Selector.text "Error" ]
         ]
+
+
+lists : List ( String, String, Html.Html msg )
+lists =
+    [ ( "Base case"
+      , "- Test"
+      , Html.div []
+            [ Html.ul []
+                [ Html.li [] [ Html.text "Test" ] ]
+            ]
+      )
+    , ( "Multiple items"
+      , "- Test\n- NewTest"
+      , Html.div []
+            [ Html.ul []
+                [ Html.li [] [ Html.text "Test" ]
+                , Html.li [] [ Html.text "NewTest" ]
+                ]
+            ]
+      )
+    , ( "Nested items"
+      , "- Test\n  - NestedItem\n- NonNested"
+      , Html.div []
+            [ Html.ul []
+                [ Html.li [] [ Html.text "Test" ]
+                , Html.ul [] [ Html.li [] [ Html.text "NestedItem" ] ]
+                , Html.li [] [ Html.text "NonNested" ]
+                ]
+            ]
+      )
+    ]
+
+
+list : Test
+list =
+    describe "Integration test of Lists" (List.map toTest lists)
