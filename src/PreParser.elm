@@ -30,6 +30,10 @@ type Line
     | Html String
 
 
+
+-- toBlocks and toBlock are auxiliary functions for working with the Line type
+
+
 toBlocks :
     (String -> Result Error (LineBlock msg))
     -> List Line
@@ -56,6 +60,22 @@ toBlock f x =
                 |> List.map Result.Ok
 
 
+
+-- parse is the main entry point for this module
+
+
+parse : String -> List Line
+parse s =
+    s
+        |> String.lines
+        |> takeS
+        |> combineHs
+
+
+
+-- combineHs combines sequential Html-blocks into one
+
+
 combineHs : List Line -> List Line
 combineHs l =
     case l of
@@ -72,12 +92,9 @@ combineHs l =
             (Str x) :: combineHs t
 
 
-parse : String -> List Line
-parse s =
-    s
-        |> String.lines
-        |> takeS
-        |> combineHs
+
+-- takeS and takeH switch between consuming a line.
+-- takeS consumes non Html-blocks until a block is parsed as Html
 
 
 takeS : List String -> List Line
@@ -93,6 +110,11 @@ takeS lines =
 
                 Err _ ->
                     (Str h) :: (takeS t)
+
+
+
+-- takeH consumes lines until the **endCond** (end condition) for the
+-- line is met.
 
 
 takeH : List String -> (String -> Bool) -> List Line
